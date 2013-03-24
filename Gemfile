@@ -1,1 +1,2 @@
 gem 'serialport'
+gem 'rspec'

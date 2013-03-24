@@ -28,4 +28,8 @@ class MatrixFormatter < RSpec::Core::Formatters::BaseFormatter
   def example_failed(example)
     @server.test(:fail)
   end
+
+  def example_pending(example)
+    @server.test(:pending)
+  end
 end

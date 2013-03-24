@@ -37,6 +37,7 @@ private
     puts data
 
     @port.write(data)
+    sleep 0.01
 
     nil
   end

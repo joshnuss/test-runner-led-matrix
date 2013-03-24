@@ -7,7 +7,7 @@ require 'serialport'
 # The URI for the server to connect to
 SERVICE_URI = "druby://localhost:8787"
 
-class MatrixDisplayServer
+class Server
   BAUD_RATE = 9600
 
   def initialize(device)
@@ -42,5 +42,5 @@ private
   end
 end
 
-DRb.start_service(SERVICE_URI, MatrixDisplayServer.new(ARGV[0]))
+DRb.start_service(SERVICE_URI, Server.new(ARGV[0]))
 DRb.thread.join

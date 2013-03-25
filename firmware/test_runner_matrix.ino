@@ -43,41 +43,39 @@ enum StatusType recentTests[TEST_COUNT];
 uint16_t currentTest = 0;
 volatile bool blinkState = false;
 
-char inData[20]; // Allocate some space for the string
-char inChar=-1; // Where to store the character read
+char data[20]; // Allocate some space for the string
+char c=-1; // Where to store the character read
 byte index = 0; // Index into array; where to store the character
 
-char serial(char* This) {
-    while (Serial.available() > 0) // Don't read unless
-                                   // there you know there is data
-    {
-        if(index < 19) // One less than the size of the array
-        {
-            inChar = Serial.read(); // Read a character
-            inData[index] = inChar; // Store it
-            index++; // Increment where to write next
-            inData[index] = '\0'; // Null terminate the string
-        }
-    }
+char readLineFromSerial() {
+  while (Serial.available() > 0) {
+    c = Serial.read();
 
-    if (strcmp(inData,This)  == 0) {
-        for (int i=0;i<19;i++) {
-            inData[i]=0;
-        }
-        index=0;
-        return(0);
+    if (c == '\n') {
+      data[index] = '\0';
+      index = 0;
+      Serial.println(data);
+      return 1;
+    } else {
+      data[index] = c;
+      index++;
+      data[index] = '\0';
     }
-    else {
-        return(1);
-    }
+  }
+
+  return 0;
+}
+
+char commandEntered(char* command) {
+  return strcmp(data, command);
 }
 
 void setup() {
-  Timer1.initialize(450000);
+  Timer1.initialize(150000);
   Timer1.attachInterrupt(blink);
   Timer1.start();
 
-  Serial.begin(115200);
+  Serial.begin(9600);
   Serial.println("8x8 LED Matrix");
   
   matrix.begin(0x70);  // pass in the address
@@ -123,37 +121,41 @@ void updateTestStatus(StatusType current) {
 }
 
 void readSerial() {
-  if (serial("MODE,SUITE") == 0) {
+  if (readLineFromSerial() != 1)
+    return;
+
+  if (commandEntered("MODE,SUITE") == 0) {
     updateSuiteStatus(status);
   }
-  else if (serial("MODE,TEST") == 0) {
+  else if (commandEntered("MODE,TEST") == 0) {
     mode        = TEST;
     currentTest = 0;
 
     resetRecentTests();
   }
-  else if (serial("SUITE,PASS") == 0) {
+  else if (commandEntered("SUITE,PASS") == 0) {
     updateSuiteStatus(PASS);
   }
-  else if (serial("SUITE,FAIL") == 0) {
+  else if (commandEntered("SUITE,FAIL") == 0) {
     updateSuiteStatus(FAIL);
   }
-  else if (serial("SUITE,PENDING") == 0) {
+  else if (commandEntered("SUITE,PENDING") == 0) {
     updateSuiteStatus(PENDING);
   }
-  else if (serial("TEST,START") == 0) {
+  else if (commandEntered("TEST,START") == 0) {
     updateTestStatus(RUNNING);
     blinkState = false;
     Timer1.restart();
   }
-  else if (serial("TEST,PASS") == 0) {
+  else if (commandEntered("TEST,PASS") == 0) {
     updateTestStatus(PASS);
   }
-  else if (serial("TEST,FAIL") == 0) {
+  else if (commandEntered("TEST,FAIL") == 0) {
     updateTestStatus(FAIL);
   }
-  else if (serial("TEST,PENDING") == 0) {
+  else if (commandEntered("TEST,PENDING") == 0) {
     updateTestStatus(PENDING);
+    Timer1.restart();
   }
 }
 

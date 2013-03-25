@@ -8,7 +8,7 @@ require 'serialport'
 SERVICE_URI = "druby://localhost:8787"
 
 class Server
-  BAUD_RATE = 9600
+  BAUD_RATE = 115200
 
   def initialize(device)
     @port = SerialPort.new(device, BAUD_RATE)

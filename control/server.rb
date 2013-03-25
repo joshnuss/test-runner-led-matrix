@@ -34,11 +34,7 @@ private
   def message(namespace, command)
     data = [namespace, command].map(&:to_s).map(&:upcase).join(',')
 
-    puts data
-
     @port.puts(data)
-
-    nil
   end
 end
 
